@@ -30,24 +30,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	listPath := readTxtFile.ReadTxtFiles(dir)
-	count := len(listPath)
-	fmt.Printf("Total Files: %v \n", count)
+	listFilesInPath := readTxtFile.ReadTxtFiles(dir)
+	countFiles := len(listFilesInPath)
+	fmt.Printf("Total Files: %v \n", countFiles)
 
-	wg.Add(count)
-	for index := 0; index < count; index++ {
-		fmt.Printf("%v \n", listPath[index])
-		go countWord(listPath[index], &wg)
+	wg.Add(countFiles)
+	for index := 0; index < countFiles; index++ {
+		fmt.Printf("%v \n", listFilesInPath[index])
+		go countWord(listFilesInPath[index], &wg)
 	}
 
-	result := make(map[string]int)
-	for index := 0; index < count; index++ {
-		merge2Map(result, <-chResult)
+	mResultWord := make(map[string]int)
+	for index := 0; index < countFiles; index++ {
+		merge2Map(mResultWord, <-chResult)
 	}
 	fmt.Println("Waiting Channel")
 	wg.Wait()
 
-	fmt.Printf("%v\n", result)
+	fmt.Printf("Total count word%v\n", mResultWord)
 	fmt.Println("All Channel return")
 }
 
@@ -71,7 +71,6 @@ func countWord(pathofFile string, wg *sync.WaitGroup) {
 			word = trimWork(word)
 			if word != "" {
 				if _, ok := result[word]; ok {
-					//do something here
 					result[word]++
 				} else {
 					result[word] = 1
