@@ -29,16 +29,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(dir)
 
 	listPath := readTxtFile.ReadTxtFiles(dir)
 	count := len(listPath)
-	fmt.Printf("%v \n", count)
+	fmt.Printf("Total Files: %v \n", count)
+
 	wg.Add(count)
 	for index := 0; index < count; index++ {
 		fmt.Printf("%v \n", listPath[index])
 		go countWord(listPath[index], &wg)
 	}
+
 	result := make(map[string]int)
 	for index := 0; index < count; index++ {
 		merge2Map(result, <-chResult)
@@ -67,8 +68,7 @@ func countWord(pathofFile string, wg *sync.WaitGroup) {
 		arrCotain := strings.Split(containLine, " ")
 
 		for _, word := range arrCotain {
-			// fmt.Println(word)
-			word = strings.ToLower(word)
+			word = trimWork(word)
 			if word != "" {
 				if _, ok := result[word]; ok {
 					//do something here
@@ -88,6 +88,7 @@ func countWord(pathofFile string, wg *sync.WaitGroup) {
 	fmt.Printf("Done gorouting %v \n", pathofFile)
 }
 
+// megre total word for all multi file
 func merge2Map(m1 map[string]int, m2 map[string]int) {
 	for index, value := range m2 {
 		if _, ok := m1[index]; ok {
@@ -96,4 +97,13 @@ func merge2Map(m1 map[string]int, m2 map[string]int) {
 			m1[index] = 1
 		}
 	}
+}
+
+func trimWork(word string) string {
+	arrSpecialChar := []string{".", ",", " ", "?"}
+
+	for _, specialChar := range arrSpecialChar {
+		word = strings.Trim(word, specialChar)
+	}
+	return strings.ToLower(word)
 }
