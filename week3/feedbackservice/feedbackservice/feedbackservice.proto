@@ -42,35 +42,35 @@ message HelloReply {
 }
 
 message PassengerFeedback {
-  string bookingCode = 1;
-  int32 passengerID = 2;
-  string feedback = 3;
+  string BookingCode = 1;
+  int32 PassengerID = 2;
+  string Feedback = 3;
 }
 message PassengerFeedbackReply {
-  PassengerFeedback result = 1;
+  PassengerFeedback Result = 1;
 }
 
 message GetFeedBackByPID {
-  string passengerID =1;
+  int32 PassengerID =1;
 }
 message GetFeedBackByPIDReply {
-  string bookingCode =1;
-  string feedback =2;
+  string BookingCode =1;
+  string Feedback =2;
 }
 
 message GetFeedBackByBookingID {
-  string bookingCode =1;
+  string BookingCode =1;
 }
 message GetFeedBackByBookingIDReply {
-  string passengerID =1;
-  string feedback =2;
+  int32 PassengerID =1;
+  string Feedback =2;
 }
 
 message DeleteFeedBackByPID {
-  string passengerID = 1;
+  int32 PassengerID = 1;
 }
 
 message DeleteFeedBackByReply {
-  string msg = 1;
-  string code = 2;
+  string Msg = 1;
+  int32 Code = 2;
 }

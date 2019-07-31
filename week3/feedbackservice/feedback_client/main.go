@@ -20,9 +20,12 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	pb "../feedbackservice"
@@ -51,9 +54,49 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Println("Simple Shell")
+	fmt.Println("---------------------")
+
+	// fmt.Println("Please choose which part do you want to do ")
+	// fmt.Println("1. Add passenger feedback")
+	fmt.Print("-> ")
+	text, _ := reader.ReadString('\n')
+	// // convert CRLF to LF
+	text = strings.Replace(text, "\n", "", -1)
+	// switch text {
+	// case "1":
+	// 	fmt.Print("-> Input Feedback")
+	// 	fmt.Print("-> BookingCode: ")
+	// 	sBookingCode, _ := reader.ReadString('\n')
+	// 	sBookingCode = strings.Replace(sBookingCode, "\n", "", -1)
+
+	// 	fmt.Print("-> PID: ")
+	// 	iPID, _ := reader.ReadString('\n')
+	// 	iPID = strings.Replace(iPID, "\n", "", -1)
+
+	// 	fmt.Print("-> Feedback: ")
+	// 	sFeedBack, _ := reader.ReadString('\n')
+	// 	sFeedBack = strings.Replace(sFeedBack, "\n", "", -1)
+
+	// 	fmt.Printf("%v,%v,%v", sBookingCode, iPID, sFeedBack)
+
+	// 	r2, err2 := c.AddPassengerFeedBack(ctx, &pb.PassengerFeedback{BookingCode: "1", PassengerID: 2, Feedback: "3"})
+	// 	if err2 != nil {
+	// 		log.Fatalf("could not greet: %v", err2)
+	// 	}
+	// 	log.Printf("Greeting: %v", r2)
+	// }
+
 	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
 	log.Printf("Greeting: %s", r.Message)
+
+	r2, err2 := c.AddPassengerFeedBack(ctx, &pb.PassengerFeedback{BookingCode: "1", PassengerID: 2, Feedback: "3"})
+	if err2 != nil {
+		log.Fatalf("could not greet: %v", err2)
+	}
+	log.Printf("Greeting: %v", r2)
 }

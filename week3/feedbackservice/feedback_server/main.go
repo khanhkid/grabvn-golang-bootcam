@@ -43,6 +43,26 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
+func (s *server) AddPassengerFeedBack(ctx context.Context, in *pb.PassengerFeedback) (*pb.PassengerFeedbackReply, error) {
+	log.Printf("Received: %v", in.BookingCode)
+	resultFeedBack := &pb.PassengerFeedback{BookingCode: in.BookingCode, PassengerID: in.PassengerID, Feedback: in.Feedback}
+	return &pb.PassengerFeedbackReply{Result: resultFeedBack}, nil
+}
+
+func (s *server) GetFeedBackByPassengerID(ctx context.Context, in *pb.GetFeedBackByPID) (*pb.GetFeedBackByPIDReply, error) {
+	log.Printf("Received GetFeedBackByPassengerID")
+	return &pb.GetFeedBackByPIDReply{BookingCode: "1", Feedback: "2"}, nil
+}
+
+func (s *server) GetFeedBackByBookingCode(ctx context.Context, in *pb.GetFeedBackByBookingID) (*pb.GetFeedBackByBookingIDReply, error) {
+	log.Printf("Received GetFeedBackByPassengerID")
+	return &pb.GetFeedBackByBookingIDReply{PassengerID: 1, Feedback: "2"}, nil
+}
+func (s *server) DeleteFeedBackByPassengerID(ctx context.Context, in *pb.DeleteFeedBackByPID) (*pb.DeleteFeedBackByReply, error) {
+	log.Printf("Received GetFeedBackByPassengerID")
+	return &pb.DeleteFeedBackByReply{Msg: "1", Code: 2}, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
