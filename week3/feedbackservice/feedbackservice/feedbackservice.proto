@@ -1,0 +1,76 @@
+/*
+Implement a simple passenger feedback service, with basic functions:
+- Add passenger feedback
+- Get by passenger id
+- Get by booking code
+- Delete by passenger id
+Requirements:
+- Implement gRPC server/client
+- Simply use local variable as storage
+- 1 booking has only 1 feedback
+- 1 passenger can add multiple feedbacks
+*/
+//protoc -I feedbackservice/ feedbackservice/feedbackservice.proto --go_out=plugins=grpc:feedbackservice
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.feedbackservice";
+option java_outer_classname = "feedbackserviceProto";
+
+package feedbackservice;
+
+// The greeting service definition.
+service FeedBack {
+  // Sends a greeting
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+  rpc AddPassengerFeedBack (PassengerFeedback) returns (PassengerFeedbackReply) {}
+  rpc GetFeedBackByPassengerID (GetFeedBackByPID) returns (GetFeedBackByPIDReply) {}
+  rpc GetFeedBackByBookingCode (GetFeedBackByBookingID) returns (GetFeedBackByBookingIDReply) {}
+  rpc DeleteFeedBackByPassengerID (DeleteFeedBackByPID) returns (DeleteFeedBackByReply) {}
+
+}
+
+// The request message containing the user's name.
+message HelloRequest {
+  string name = 1;
+}
+
+// The response message containing the greetings
+message HelloReply {
+  string message = 1;
+}
+
+message PassengerFeedback {
+  string bookingCode = 1;
+  int32 passengerID = 2;
+  string feedback = 3;
+}
+message PassengerFeedbackReply {
+  PassengerFeedback result = 1;
+}
+
+message GetFeedBackByPID {
+  string passengerID =1;
+}
+message GetFeedBackByPIDReply {
+  string bookingCode =1;
+  string feedback =2;
+}
+
+message GetFeedBackByBookingID {
+  string bookingCode =1;
+}
+message GetFeedBackByBookingIDReply {
+  string passengerID =1;
+  string feedback =2;
+}
+
+message DeleteFeedBackByPID {
+  string passengerID = 1;
+}
+
+message DeleteFeedBackByReply {
+  string msg = 1;
+  string code = 2;
+}
