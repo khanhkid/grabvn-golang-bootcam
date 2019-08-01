@@ -54,16 +54,14 @@ message GetFeedBackByPID {
   int32 PassengerID =1;
 }
 message GetFeedBackByPIDReply {
-  string BookingCode =1;
-  string Feedback =2;
+  repeated PassengerFeedback Result = 1;
 }
 
 message GetFeedBackByBookingID {
   string BookingCode =1;
 }
 message GetFeedBackByBookingIDReply {
-  int32 PassengerID =1;
-  string Feedback =2;
+  repeated PassengerFeedback Result = 1;
 }
 
 message DeleteFeedBackByPID {
