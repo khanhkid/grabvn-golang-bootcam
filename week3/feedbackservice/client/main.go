@@ -31,6 +31,7 @@ import (
 
 	pb "../feedbackservice"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -53,6 +54,7 @@ func main() {
 	// 	name = os.Args[1]
 	// }
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+
 	defer cancel()
 
 	reader := bufio.NewReader(os.Stdin)
@@ -88,8 +90,11 @@ func main() {
 			sFeedBack = strings.Replace(sFeedBack, "\n", "", -1)
 
 			r2, err2 := c.AddPassengerFeedBack(ctx, &pb.PassengerFeedback{BookingCode: sBookingCode, PassengerID: int32(iPID), Feedback: sFeedBack})
+
 			if err2 != nil {
-				log.Printf("\033[0;31mFail: %v\033[0m", err2)
+				statusError, _ := status.FromError(err2)
+
+				log.Printf("\033[0;31mFail: %v - %v\033[0m", statusError.Code(), statusError.Message())
 			} else {
 				log.Printf("\033[0;32mSuccess: %v\033[0m", r2.Result)
 			}

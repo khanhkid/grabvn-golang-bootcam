@@ -23,14 +23,16 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net"
 	"strconv"
 
+	"google.golang.org/grpc/codes"
+
 	pb "../feedbackservice"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -49,20 +51,24 @@ func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloRe
 }
 
 func (s *server) AddPassengerFeedBack(ctx context.Context, in *pb.PassengerFeedback) (*pb.PassengerFeedbackReply, error) {
-	// feedBackData := make([]pb.PassengerFeedback, 1)
-	PassegerFeedBack := pb.PassengerFeedback{BookingCode: in.BookingCode, PassengerID: in.PassengerID, Feedback: in.Feedback}
+	fmt.Println("Received Add New Passenger FeedBack")
+	//Check condition of assignment: 1 booking has only 1 feedback
 	resultFeedBack := &pb.PassengerFeedback{BookingCode: in.BookingCode, PassengerID: in.PassengerID, Feedback: in.Feedback}
 	for _, feedBack := range feedBackData {
-		if feedBack.BookingCode == in.BookingCode && feedBack.PassengerID == in.PassengerID {
-			return &pb.PassengerFeedbackReply{Result: resultFeedBack}, errors.New("Duplicate value FeedBack Booking Code:" + feedBack.BookingCode + " PassengerID:" + strconv.FormatInt(int64(feedBack.PassengerID), 10))
+		if feedBack.BookingCode == in.BookingCode {
+			return &pb.PassengerFeedbackReply{Result: resultFeedBack}, status.Error(codes.AlreadyExists, "1 booking has only 1 feedback\nDuplicate feed for Booking Code:"+feedBack.BookingCode)
 		}
 	}
+	// Insert to database
+	PassegerFeedBack := pb.PassengerFeedback{BookingCode: in.BookingCode, PassengerID: in.PassengerID, Feedback: in.Feedback}
 	feedBackData = append(feedBackData, PassegerFeedBack)
+	fmt.Println("Currently FeedBack")
 	fmt.Println(feedBackData)
 	return &pb.PassengerFeedbackReply{Result: resultFeedBack}, nil
 }
 
 func (s *server) GetFeedBackByPassengerID(ctx context.Context, in *pb.GetFeedBackByPID) (*pb.GetFeedBackByPIDReply, error) {
+	fmt.Println("Received GetFeedBackByPassengerID")
 	iPID := in.PassengerID
 	resultFeedBack := make([]*pb.PassengerFeedback, 0)
 	for _, feed := range feedBackData {
@@ -71,11 +77,13 @@ func (s *server) GetFeedBackByPassengerID(ctx context.Context, in *pb.GetFeedBac
 			resultFeedBack = append(resultFeedBack, &pb.PassengerFeedback{BookingCode: feed.BookingCode, PassengerID: feed.PassengerID, Feedback: feed.Feedback})
 		}
 	}
+	fmt.Println("Response GetFeedBackByPassengerID")
 	fmt.Println(resultFeedBack)
 	return &pb.GetFeedBackByPIDReply{Result: resultFeedBack}, nil
 }
 
 func (s *server) GetFeedBackByBookingCode(ctx context.Context, in *pb.GetFeedBackByBookingID) (*pb.GetFeedBackByBookingIDReply, error) {
+	fmt.Println("Response GetFeedBackByBookingCode")
 	sBookingCode := in.BookingCode
 	resultFeedBack := make([]*pb.PassengerFeedback, 0)
 	for _, feed := range feedBackData {
@@ -84,11 +92,12 @@ func (s *server) GetFeedBackByBookingCode(ctx context.Context, in *pb.GetFeedBac
 			resultFeedBack = append(resultFeedBack, &pb.PassengerFeedback{BookingCode: feed.BookingCode, PassengerID: feed.PassengerID, Feedback: feed.Feedback})
 		}
 	}
+	log.Printf("Response GetFeedBackByPassengerID")
 	fmt.Println(resultFeedBack)
-	log.Printf("Received GetFeedBackByPassengerID")
 	return &pb.GetFeedBackByBookingIDReply{Result: resultFeedBack}, nil
 }
 func (s *server) DeleteFeedBackByPassengerID(ctx context.Context, in *pb.DeleteFeedBackByPID) (*pb.DeleteFeedBackByReply, error) {
+	log.Printf("Received DeleteFeedBackByPassengerID")
 	iPID := in.PassengerID
 	countFeedBack := len(feedBackData)
 	copiedArray := make([]pb.PassengerFeedback, 0)
@@ -101,14 +110,17 @@ func (s *server) DeleteFeedBackByPassengerID(ctx context.Context, in *pb.DeleteF
 		}
 	}
 	feedBackData = copiedArray
+	log.Printf("Response DeleteFeedBackByPassengerID")
 	return &pb.DeleteFeedBackByReply{Msg: "Success Removed:" + strconv.FormatInt(int64(countFoundMatched), 10), Code: 200}, nil
 }
 
 func main() {
 	// Create default database
-	feedBackData = append(feedBackData, pb.PassengerFeedback{BookingCode: "1", PassengerID: 2, Feedback: "This is feedback1"})
-	feedBackData = append(feedBackData, pb.PassengerFeedback{BookingCode: "2", PassengerID: 2, Feedback: "This is feedback2"})
-	feedBackData = append(feedBackData, pb.PassengerFeedback{BookingCode: "3", PassengerID: 2, Feedback: "This is feedback3"})
+	feedBackData = []pb.PassengerFeedback{
+		{BookingCode: "1", PassengerID: 2, Feedback: "This is feedback1"},
+		{BookingCode: "2", PassengerID: 2, Feedback: "This is feedback2"},
+		{BookingCode: "3", PassengerID: 2, Feedback: "This is feedback3"},
+	}
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
