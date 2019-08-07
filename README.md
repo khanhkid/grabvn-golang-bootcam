@@ -10,6 +10,12 @@ Week 3: gRPC, Protobuf Basics
 
 [Assignment] <https://github.com/khanhkid/grabvn-golang-bootcam/tree/master/week3/feedbackservice>
 
+Check validate
+
+Mysql
+
+Implement gRPC HTTP
+
 Week 4: Testing (unit, stub, fake, mock, functional, end to end, …)
 
 Week 5: Dependency Injection

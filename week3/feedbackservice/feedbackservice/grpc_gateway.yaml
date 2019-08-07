@@ -1,0 +1,8 @@
+config_version: 3
+http: 
+  rules: 
+    - 
+      body: "*"
+      post: /v1/example/hello
+      selector: feedbackservice.FeedBack.SayHello
+type: google.api.Service

@@ -23,16 +23,24 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
-	"net"
+	"net/http"
 	"strconv"
+
+	"github.com/golang/glog"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	"google.golang.org/grpc/codes"
 
 	pb "../feedbackservice"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
+)
+
+var (
+	echoEndpoint = flag.String("echo_endpoint", "localhost:9090", "endpoint of YourService")
 )
 
 const (
@@ -114,21 +122,26 @@ func (s *server) DeleteFeedBackByPassengerID(ctx context.Context, in *pb.DeleteF
 	return &pb.DeleteFeedBackByReply{Msg: "Success Removed:" + strconv.FormatInt(int64(countFoundMatched), 10), Code: 200}, nil
 }
 
-func main() {
-	// Create default database
-	feedBackData = []pb.PassengerFeedback{
-		{BookingCode: "1", PassengerID: 2, Feedback: "This is feedback1"},
-		{BookingCode: "2", PassengerID: 2, Feedback: "This is feedback2"},
-		{BookingCode: "3", PassengerID: 2, Feedback: "This is feedback3"},
+func run() error {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+	err := pb.RegisterFeedBackHandlerFromEndpoint(ctx, mux, *echoEndpoint, opts)
+	if err != nil {
+		return err
 	}
 
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	s := grpc.NewServer()
-	pb.RegisterFeedBackServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+	return http.ListenAndServe(":8081", mux)
+}
+
+func main() {
+	flag.Parse()
+	defer glog.Flush()
+
+	if err := run(); err != nil {
+		glog.Fatal(err)
 	}
 }
