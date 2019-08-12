@@ -26,11 +26,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
+	"net"
 	"strconv"
-
-	"github.com/golang/glog"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	"google.golang.org/grpc/codes"
 
@@ -40,7 +37,7 @@ import (
 )
 
 var (
-	echoEndpoint = flag.String("echo_endpoint", "localhost:9090", "endpoint of YourService")
+	echoEndpoint = flag.String("echo_endpoint", "localhost:50051", "endpoint of YourService")
 )
 
 const (
@@ -107,6 +104,7 @@ func (s *server) GetFeedBackByBookingCode(ctx context.Context, in *pb.GetFeedBac
 func (s *server) DeleteFeedBackByPassengerID(ctx context.Context, in *pb.DeleteFeedBackByPID) (*pb.DeleteFeedBackByReply, error) {
 	log.Printf("Received DeleteFeedBackByPassengerID")
 	iPID := in.PassengerID
+
 	countFeedBack := len(feedBackData)
 	copiedArray := make([]pb.PassengerFeedback, 0)
 	countFoundMatched := 0
@@ -122,26 +120,21 @@ func (s *server) DeleteFeedBackByPassengerID(ctx context.Context, in *pb.DeleteF
 	return &pb.DeleteFeedBackByReply{Msg: "Success Removed:" + strconv.FormatInt(int64(countFoundMatched), 10), Code: 200}, nil
 }
 
-func run() error {
-	ctx := context.Background()
-	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	mux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithInsecure()}
-	err := pb.RegisterFeedBackHandlerFromEndpoint(ctx, mux, *echoEndpoint, opts)
-	if err != nil {
-		return err
+func main() {
+	// Create default database
+	feedBackData = []pb.PassengerFeedback{
+		{BookingCode: "1", PassengerID: 2, Feedback: "This is feedback1"},
+		{BookingCode: "2", PassengerID: 2, Feedback: "This is feedback2"},
+		{BookingCode: "3", PassengerID: 2, Feedback: "This is feedback3"},
 	}
 
-	return http.ListenAndServe(":8081", mux)
-}
-
-func main() {
-	flag.Parse()
-	defer glog.Flush()
-
-	if err := run(); err != nil {
-		glog.Fatal(err)
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterFeedBackServer(s, &server{})
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

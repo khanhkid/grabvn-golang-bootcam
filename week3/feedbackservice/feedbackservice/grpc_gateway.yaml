@@ -5,4 +5,8 @@ http:
       body: "*"
       post: /v1/example/hello
       selector: feedbackservice.FeedBack.SayHello
+    - 
+      body: "*"
+      post: /v1/feedback/passenger-id
+      selector: feedbackservice.FeedBack.GetFeedBackByPassengerID
 type: google.api.Service
